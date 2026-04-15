@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronos • Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <!-- Background -->
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="auth-container">
+    <div class="glass-card">
+      <!-- Logo -->
+      <div class="logo-wrapper">
+<div class="logo-icon">C</div>
+<div class="logo-text">Chronos</div>
+        <div class="logo-sub">Master Your Time</div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Login</button>
+        <button class="tab" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Messages -->
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Username / Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" class="form-input" id="loginUsername" placeholder="fitrah" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
+            <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+          </div>
+        </div>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe">Remember me for 30 days</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In →</button>
+        <div class="links">
+          <span class="link" onclick="openForgotPassword()">Forgot password?</span>
+          <span class="link" onclick="switchTab('register')">Create account</span>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📝</span>
+            <input type="text" class="form-input" id="regFullName" placeholder="Your full name" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" class="form-input" id="regUsername" placeholder="Choose a username" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📧</span>
+            <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" class="form-input" id="regPassword" placeholder="Min. 8 characters" required>
+            <span class="password-toggle" onclick="togglePassword('regPassword')">👁️</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✓</span>
+            <input type="password" class="form-input" id="regConfirmPassword" placeholder="Re-enter password" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Account →</button>
+        <div class="links">
+          <span class="link" onclick="switchTab('login')">Already have an account? Sign in</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal">
+      <div class="modal-title">Reset Password</div>
+      <div class="error-message" id="modalError"></div>
+      <div class="success-message" id="modalSuccess"></div>
+      <form onsubmit="handleForgotPassword(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="resetEmail" placeholder="Enter your email" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Send Reset Link</button>
+        <div class="links" style="margin-top: 16px;">
+          <span class="link" onclick="closeModal('forgotPasswordModal')">Back to Login</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

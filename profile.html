@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chronos • My Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    .profile-container { max-width: 650px; margin: 0 auto; }
+    .profile-header { position: relative; margin-bottom: 20px; }
+    .profile-cover { height: 120px; background: var(--gradient); border-radius: var(--r2) var(--r2) 0 0; }
+    .profile-avatar-wrapper { display: flex; justify-content: center; margin-top: -50px; position: relative; }
+    .profile-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: var(--gradient); display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 700; color: #fff;
+      border: 4px solid var(--bg2); object-fit: cover;
+    }
+    .profile-avatar-edit-btn {
+      position: absolute; bottom: 0; right: calc(50% - 50px); transform: translateX(50%);
+      width: 32px; height: 32px; background: var(--surface2); border: 2px solid var(--bg2);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; color: var(--text);
+    }
+    .profile-avatar-edit-btn:hover { background: var(--accent); color: #fff; }
+    .profile-stats {
+      display: flex; gap: 30px; justify-content: center; margin: 20px 0;
+      padding: 20px; background: var(--surface); border-radius: var(--r2); border: 1px solid var(--border);
+    }
+    .profile-stat { text-align: center; }
+    .profile-stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); }
+    .profile-stat-label { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .info-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 20px; }
+    .info-row { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .info-row:last-child { border-bottom: none; }
+    .info-icon { width: 40px; height: 40px; background: var(--bg3); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .info-content { flex: 1; }
+    .info-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .info-value { color: var(--text); font-size: 15px; font-weight: 500; }
+    .badge-role { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 4px; }
+    .role-superadmin { background: rgba(255, 95, 126, 0.15); color: var(--danger); }
+    .role-admin { background: rgba(255, 181, 71, 0.15); color: var(--warn); }
+    .role-user { background: rgba(79, 143, 255, 0.15); color: var(--accent); }
+    .avatar-upload-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+    .avatar-preview-large {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: var(--gradient); display: flex; align-items: center; justify-content: center;
+      font-size: 40px; color: #fff; object-fit: cover;
+      margin-bottom: 12px; border: 3px solid var(--border2);
+    }
+    .upload-btn {
+      background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .upload-btn:hover { background: var(--accent); color: #fff; }
+    .remove-photo-btn { color: var(--danger); font-size: 12px; cursor: pointer; margin-top: 8px; }
+    .remove-photo-btn:hover { text-decoration: underline; }
+
+    /* Loading overlay */
+    .page-loading {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 16px;
+    }
+    .page-loading .spinner {
+      width: 40px; height: 40px; border: 3px solid var(--surface2);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .page-loading p { color: var(--text2); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <!-- Loading overlay (tampil sampai auth selesai) -->
+  <div class="page-loading" id="pageLoading">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <div class="app" id="appContent" style="display:none">
+    <nav class="sidebar" id="sidebar">
+      <div class="logo">
+        <div class="logo-mark">
+          <div class="logo-icon">C</div>
+          <span class="logo-name">Chronos</span>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="section-title" style="padding:0 12px;margin-bottom:8px">Main</div>
+        <button class="nav-item" onclick="window.location.href='dashboard.html'">
+          <span class="nav-icon">⊞</span>Dashboard
+        </button>
+        <button class="nav-item" onclick="window.location.href='dashboard.html'">
+          <span class="nav-icon">⚔️</span>Quests
+        </button>
+        <button class="nav-item" onclick="window.location.href='dashboard.html'">
+          <span class="nav-icon">◎</span>Timer
+        </button>
+        <div class="section-title" style="padding:0 12px;margin:16px 0 8px">Account</div>
+        <button class="nav-item active">
+          <span class="nav-icon">👤</span>Profile
+        </button>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="user-card" onclick="openSettings()">
+          <div class="avatar" id="userAvatar">U</div>
+          <div class="user-info">
+            <div class="name" id="userName">User</div>
+            <div class="level" id="userLevel">⚡ Level 1</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px;width:100%;" onclick="logout()">🚪 Logout</button>
+      </div>
+    </nav>
+
+    <div class="main">
+      <div style="display:none;padding:16px;border-bottom:1px solid var(--border);align-items:center;gap:14px;background:var(--bg2)" id="topbar">
+        <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="background:none;border:none;color:var(--text);font-size:22px;cursor:pointer">☰</button>
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Chronos</span>
+      </div>
+
+      <div class="page active" style="display:block;padding:28px 32px;max-width:800px;margin:0 auto">
+        <div class="page-header">
+          <div>
+            <div class="page-title">My Profile</div>
+            <div class="page-sub">View and edit your personal information</div>
+          </div>
+          <button class="btn btn-primary" onclick="openEditProfile()">✏️ Edit Profile</button>
+        </div>
+
+        <div class="profile-container">
+          <div class="profile-header">
+            <div class="profile-cover"></div>
+            <div class="profile-avatar-wrapper">
+              <img class="profile-avatar" id="profileAvatarImg" alt="Profile" style="display:none;">
+              <div class="profile-avatar" id="profileAvatarText">U</div>
+              <div class="profile-avatar-edit-btn" onclick="openEditProfile()" title="Edit Profile">📷</div>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-bottom:20px">
+            <h2 style="font-family:'Syne',sans-serif;font-size:24px;margin-bottom:4px" id="profileFullName">Loading...</h2>
+            <p style="color:var(--text2)" id="profileUsername">@username</p>
+            <span class="badge-role" id="profileRoleBadge">User</span>
+          </div>
+
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <div class="profile-stat-value" id="profileLevel">1</div>
+              <div class="profile-stat-label">Level</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-value" id="profileXP">0</div>
+              <div class="profile-stat-label">XP</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-value" id="profileQuests">0</div>
+              <div class="profile-stat-label">Quests</div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <div class="info-row">
+              <div class="info-icon">📧</div>
+              <div class="info-content">
+                <div class="info-label">Email</div>
+                <div class="info-value" id="profileEmail">-</div>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">📱</div>
+              <div class="info-content">
+                <div class="info-label">Phone Number (Optional)</div>
+                <div class="info-value" id="profilePhone">-</div>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-icon">🎨</div>
+              <div class="info-content">
+                <div class="info-label">Theme Preference</div>
+                <div class="info-value" id="profileTheme">Dark</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Settings Panel (Customize UI) -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <div class="settings-title">Customize UI</div>
+    <button class="settings-close" onclick="closeSettings()">✕</button>
+  </div>
+  
+  <div class="section-title">Theme</div>
+  <div style="display:flex;gap:10px;margin-bottom:20px">
+    <button class="btn btn-secondary btn-sm" id="btnDark" onclick="setTheme('dark')">🌙 Dark</button>
+    <button class="btn btn-ghost btn-sm" id="btnLight" onclick="setTheme('light')">☀️ Light</button>
+  </div>
+  
+  <div class="section-title">Accent Color</div>
+  <div class="color-picker">
+    <div class="color-option active" style="background:#4f8fff" onclick="setAccentColor('#4f8fff')"></div>
+    <div class="color-option" style="background:#7b6fff" onclick="setAccentColor('#7b6fff')"></div>
+    <div class="color-option" style="background:#ff6b9d" onclick="setAccentColor('#ff6b9d')"></div>
+    <div class="color-option" style="background:#3dd68c" onclick="setAccentColor('#3dd68c')"></div>
+    <div class="color-option" style="background:#ffb547" onclick="setAccentColor('#ffb547')"></div>
+    <div class="color-option" style="background:#ff5f7e" onclick="setAccentColor('#ff5f7e')"></div>
+  </div>
+  
+  <div class="section-title">Animations</div>
+  <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+    <input type="checkbox" id="animationsToggle" checked onchange="toggleAnimations(this.checked)">
+    <span style="color:var(--text2)">Enable animations</span>
+  </label>
+
+  <div class="divider"></div>
+  <div class="section-title">Account</div>
+  <button class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:8px" onclick="openEditProfile()">✏️ Edit Profile</button>
+</div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" id="editProfileModal">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Profile</h3>
+        <button class="modal-close" onclick="closeModal('editProfileModal')">✕</button>
+      </div>
+      <form onsubmit="saveProfile(event)">
+        <div class="avatar-upload-area">
+          <img class="avatar-preview-large" id="avatarPreviewImg" alt="Preview" style="display:none;">
+          <div class="avatar-preview-large" id="avatarPreviewText">U</div>
+          <button type="button" class="upload-btn" onclick="document.getElementById('photoUpload').click()">
+            📷 Choose Photo
+          </button>
+          <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+          <span class="remove-photo-btn" onclick="removePhoto()" id="removePhotoBtn" style="display:none;">
+            Remove Photo
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="editFullName" placeholder="Your full name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="editEmail" type="email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number (Optional)</label>
+          <input class="form-input" id="editPhone" placeholder="08123456789">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password (Optional)</label>
+          <input class="form-input" id="editPassword" type="password" placeholder="Leave blank to keep current">
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('editProfileModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="notif" id="notifContainer"></div>
+
+  <script src="js/store.js"></script>
+  <script>
+    let tempPhotoData = null;
+
+    // ========== FIX: ASYNC INIT — tunggu STORE.init() selesai ==========
+    async function initProfile() {
+      await STORE.init();
+
+      const user = STORE.getCurrentUser();
+
+      // Sembunyikan loading, tampilkan konten
+      document.getElementById('pageLoading').style.display = 'none';
+
+      if (!user) {
+        // Belum login → redirect
+        window.location.replace('index.html');
+        return;
+      }
+
+      document.getElementById('appContent').style.display = 'flex';
+
+      // Apply theme + semua settings (accent color, animations)
+      const settings = user.settings || { theme: 'dark' };
+      // Langsung apply sebelum render untuk menghindari flash
+      document.documentElement.setAttribute('data-theme', settings.theme || 'dark');
+      if (settings.accentColor) {
+        document.documentElement.style.setProperty('--accent', settings.accentColor);
+        document.documentElement.style.setProperty('--accent2', settings.accentColor);
+      }
+      document.documentElement.setAttribute('data-animations', settings.animations !== false);
+
+      // Update sidebar
+      document.getElementById('userName').textContent = (user.fullName || 'User').split(' ')[0];
+      document.getElementById('userLevel').textContent = `⚡ Level ${user.level || 1}`;
+      updateSidebarAvatar(user);
+
+      // Render profil
+      loadProfile(user);
+
+      // Apply settings ke panel UI (setelah DOM siap)
+      setTimeout(() => applySettingsUI(settings), 50);
+
+      if (window.innerWidth < 768) {
+        document.getElementById('topbar').style.display = 'flex';
+      }
+    }
+
+    function updateSidebarAvatar(user) {
+      const avatar = document.getElementById('userAvatar');
+      if (!avatar || !user) return;
+      if (user.photoURL) {
+        avatar.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = user.photoURL;
+        img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover';
+        avatar.appendChild(img);
+      } else {
+        avatar.textContent = (user.fullName || 'U').charAt(0).toUpperCase();
+      }
+    }
+
+    // FIX: tidak lagi pakai STORE.getUsers() — langsung pakai STORE.getCurrentUser()
+    function loadProfile(userOverride) {
+      const user = userOverride || STORE.getCurrentUser();
+      if (!user) return;
+
+      const avatarText = document.getElementById('profileAvatarText');
+      const avatarImg = document.getElementById('profileAvatarImg');
+
+      if (user.photoURL) {
+        avatarImg.src = user.photoURL;
+        avatarImg.style.display = 'block';
+        avatarText.style.display = 'none';
+      } else {
+        avatarText.textContent = (user.fullName || 'U').charAt(0).toUpperCase();
+        avatarImg.style.display = 'none';
+        avatarText.style.display = 'flex';
+      }
+
+      document.getElementById('profileFullName').textContent = user.fullName || '-';
+      document.getElementById('profileUsername').textContent = '@' + (user.username || '');
+
+      const roleBadge = document.getElementById('profileRoleBadge');
+      const roleLabel = user.role === 'superadmin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'User';
+      roleBadge.textContent = roleLabel;
+      roleBadge.className = `badge-role role-${user.role || 'user'}`;
+
+      document.getElementById('profileLevel').textContent = user.level || 1;
+      document.getElementById('profileXP').textContent = (user.xp || 0).toLocaleString();
+      document.getElementById('profileQuests').textContent = user.questsCompleted?.length || 0;
+      document.getElementById('profileEmail').textContent = user.email || 'Not set';
+      document.getElementById('profilePhone').textContent = user.phone || 'Not set';
+      document.getElementById('profileTheme').textContent =
+        (user.settings?.theme === 'light') ? 'Light' : 'Dark';
+    }
+
+    // FIX: tidak lagi pakai STORE.getUsers()
+    function openEditProfile() {
+      const user = STORE.getCurrentUser();
+      if (!user) return;
+
+      document.getElementById('editFullName').value = user.fullName || '';
+      document.getElementById('editEmail').value = user.email || '';
+      document.getElementById('editPhone').value = user.phone || '';
+      document.getElementById('editPassword').value = '';
+
+      tempPhotoData = user.photoURL || null;
+      updateAvatarPreview(tempPhotoData, user.fullName || 'U');
+      document.getElementById('removePhotoBtn').style.display = user.photoURL ? 'inline' : 'none';
+
+      document.getElementById('editProfileModal').classList.add('active');
+    }
+
+    function updateAvatarPreview(photoData, fullName) {
+      const previewImg = document.getElementById('avatarPreviewImg');
+      const previewText = document.getElementById('avatarPreviewText');
+
+      if (photoData) {
+        previewImg.src = photoData;
+        previewImg.style.display = 'block';
+        previewText.style.display = 'none';
+      } else {
+        previewText.textContent = (fullName || 'U').charAt(0).toUpperCase();
+        previewImg.style.display = 'none';
+        previewText.style.display = 'flex';
+      }
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showNotif('Error', 'Photo size must be less than 2MB', 'danger');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        showNotif('Error', 'Please select an image file', 'danger');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        tempPhotoData = e.target.result;
+        const fullName = document.getElementById('editFullName').value || STORE.getCurrentUser()?.fullName || 'U';
+        updateAvatarPreview(tempPhotoData, fullName);
+        document.getElementById('removePhotoBtn').style.display = 'inline';
+        showNotif('Photo Selected', 'Click Save to apply', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removePhoto() {
+      tempPhotoData = null;
+      const fullName = document.getElementById('editFullName').value || STORE.getCurrentUser()?.fullName || 'U';
+      updateAvatarPreview(null, fullName);
+      document.getElementById('removePhotoBtn').style.display = 'none';
+      document.getElementById('photoUpload').value = '';
+      showNotif('Photo Removed', 'Profile photo will be removed on save', 'info');
+    }
+
+    // Update preview saat nama diketik
+    document.addEventListener('DOMContentLoaded', function() {
+      const nameInput = document.getElementById('editFullName');
+      if (nameInput) {
+        nameInput.addEventListener('input', function(e) {
+          if (!tempPhotoData) {
+            const previewText = document.getElementById('avatarPreviewText');
+            if (previewText) previewText.textContent = e.target.value.charAt(0).toUpperCase() || 'U';
+          }
+        });
+      }
+    });
+
+    async function saveProfile(e) {
+      e.preventDefault();
+
+      const updates = {
+        fullName: document.getElementById('editFullName').value.trim(),
+        email: document.getElementById('editEmail').value.trim(),
+        phone: document.getElementById('editPhone').value.trim(),
+        photoURL: tempPhotoData  // null jika dihapus, string base64 jika ada foto
+      };
+
+      const newPassword = document.getElementById('editPassword').value;
+      if (newPassword) {
+        if (newPassword.length < 8) {
+          showNotif('Error', 'Password must be at least 8 characters', 'danger');
+          return;
+        }
+        updates.password = newPassword;
+      }
+
+      const submitBtn = e.target.querySelector('[type="submit"]');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving...'; }
+
+      const success = await STORE.updateProfile(updates);
+
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Save Changes'; }
+
+      if (success) {
+        const user = STORE.getCurrentUser();
+        document.getElementById('userName').textContent = (user.fullName || 'User').split(' ')[0];
+        updateSidebarAvatar(user);
+        loadProfile(user);
+        showNotif('Success', 'Profile updated successfully!', 'success');
+        closeModal('editProfileModal');
+      } else {
+        showNotif('Error', 'Failed to update profile', 'danger');
+      }
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+      tempPhotoData = null;
+      const photoUpload = document.getElementById('photoUpload');
+      if (photoUpload) photoUpload.value = '';
+    }
+
+    function showNotif(title, msg, type = 'info') {
+      const container = document.getElementById('notifContainer');
+      if (!container) return;
+      const colors = { success: 'var(--success)', warn: 'var(--warn)', danger: 'var(--danger)', info: 'var(--accent)' };
+      const icons = { success: '✓', warn: '!', danger: '✕', info: '✦' };
+
+      const div = document.createElement('div');
+      div.className = 'notif-item';
+      div.innerHTML = `<div class="notif-title" style="color:${colors[type]}">${icons[type]} ${title}</div>
+        <div style="color:var(--text2)">${msg}</div>`;
+      container.appendChild(div);
+
+      setTimeout(() => div.classList.add('show'), 10);
+      setTimeout(() => {
+        div.classList.remove('show');
+        setTimeout(() => div.remove(), 400);
+      }, 4000);
+    }
+
+    function logout() {
+      STORE.logout();
+    }
+
+    // ========== SETTINGS (Customize UI) ==========
+    function openSettings() {
+      const panel = document.getElementById('settingsPanel');
+      if (panel) panel.classList.add('open');
+    }
+
+    function closeSettings() {
+      const panel = document.getElementById('settingsPanel');
+      if (panel) panel.classList.remove('open');
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      // Update button state
+      document.getElementById('btnDark').className = theme === 'dark' ? 'btn btn-secondary btn-sm' : 'btn btn-ghost btn-sm';
+      document.getElementById('btnLight').className = theme === 'light' ? 'btn btn-secondary btn-sm' : 'btn btn-ghost btn-sm';
+      // Simpan ke server via STORE
+      const user = STORE.getCurrentUser();
+      if (user) {
+        const settings = { ...(user.settings || {}), theme };
+        STORE.updateUserSettings(settings);
+        user.settings = settings;
+        // Update teks theme di info section
+        const themeEl = document.getElementById('profileTheme');
+        if (themeEl) themeEl.textContent = theme === 'light' ? 'Light' : 'Dark';
+      }
+      showNotif('Theme Updated', 'Switched to ' + theme + ' mode', 'success');
+    }
+
+    function setAccentColor(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      document.documentElement.style.setProperty('--accent2', color);
+      document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+      if (event && event.target) event.target.classList.add('active');
+      const user = STORE.getCurrentUser();
+      if (user) {
+        const settings = { ...(user.settings || {}), accentColor: color };
+        STORE.updateUserSettings(settings);
+        user.settings = settings;
+      }
+      showNotif('Color Updated', 'Accent color changed', 'success');
+    }
+
+    function toggleAnimations(enabled) {
+      document.documentElement.setAttribute('data-animations', enabled);
+      const user = STORE.getCurrentUser();
+      if (user) {
+        const settings = { ...(user.settings || {}), animations: enabled };
+        STORE.updateUserSettings(settings);
+        user.settings = settings;
+      }
+      showNotif('Animations', enabled ? 'Enabled' : 'Disabled', 'success');
+    }
+
+    function applySettingsUI(settings) {
+      if (!settings) return;
+      // Theme
+      const theme = settings.theme || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      const btnDark = document.getElementById('btnDark');
+      const btnLight = document.getElementById('btnLight');
+      if (btnDark) btnDark.className = theme === 'dark' ? 'btn btn-secondary btn-sm' : 'btn btn-ghost btn-sm';
+      if (btnLight) btnLight.className = theme === 'light' ? 'btn btn-secondary btn-sm' : 'btn btn-ghost btn-sm';
+      // Accent
+      if (settings.accentColor) {
+        document.documentElement.style.setProperty('--accent', settings.accentColor);
+        document.querySelectorAll('.color-option').forEach(opt => {
+          opt.classList.toggle('active', opt.style.background === settings.accentColor);
+        });
+      }
+      // Animations
+      document.documentElement.setAttribute('data-animations', settings.animations !== false);
+      const animToggle = document.getElementById('animationsToggle');
+      if (animToggle) animToggle.checked = settings.animations !== false;
+    }
+
+    // ← FIX: panggil initProfile (async), bukan init() synchronous
+    window.addEventListener('DOMContentLoaded', initProfile);
+  </script>
+</body>
+</html>
